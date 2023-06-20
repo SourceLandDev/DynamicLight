@@ -5,6 +5,11 @@
 #include "Plugin.h"
 #include "Config.h"
 
+#include "llapi/EventAPI.h"
+
+#include "llapi/mc/Player.hpp"
+#include "llapi/mc/Container.hpp"
+
 #include <filesystem>
 
 using namespace ll;
@@ -33,9 +38,23 @@ void PluginInit() {
         {"Github","https://github.com/Redbeanw44602/MovingLight"}
     });
 
-    Event::ServerStartedEvent::subscribe([](Event::ServerStartedEvent ev) -> bool {
+    Event::ServerStartedEvent::subscribe([](Event::ServerStartedEvent ev) {
         PluginMain();
         return true;
+    });
+
+    // OffHand Helper
+
+    Event::PlayerAttackBlockEvent::subscribe([](Event::PlayerAttackBlockEvent ev) {
+        if (!config.isEnabled() ||
+            ev.mItemStack->isNull() ||
+            !ev.mPlayer->getOffhandSlot().isNull() ||
+            !config.getBrightness(*ev.mItemStack))
+            return true;
+        ev.mPlayer->setOffhandSlot(*ev.mItemStack);
+        ev.mPlayer->getInventory().removeItem_s(ev.mPlayer->getSelectedItemSlot(), ev.mItemStack->getCount());
+        ev.mPlayer->sendInventory(true);
+        return false;
     });
 
 }

@@ -17,32 +17,26 @@ using json = nlohmann::json;
 class Config {
 public:
 
-    explicit Config() noexcept;
-
-    void loadFromFile(const string& path);
-
-    [[nodiscard]] bool isLightSource(const HashedString& name);
-
-    [[nodiscard]] bool isOffhandItem(const HashedString& name);
+    void loadFromFile(const string&);
 
     [[nodiscard]] bool isEnabled() const;
 
     [[nodiscard]] bool isItemActorEnabled() const;
 
-    [[nodiscard]] unsigned int getBrightness(const ItemStack& it);
+    [[nodiscard]] unsigned int getBrightness(const ItemStack&, bool = false);
 
     [[nodiscard]] bool isUnderWaterEnabled() const;
 
 private:
 
-    bool _fromJson(json& cfg);
+    bool _fromJson(json&);
 
     [[nodiscard]] std::string _toString();
 
     // Call after read is complete.
     void _computeLightBlocks();
 
-    void _update(json& cfg);
+    void _update(json&);
 
     void _save();
 
@@ -56,28 +50,6 @@ private:
     bool mEnableItemActor = true;
     bool mAutoDiscoverGlowingBlock = true;
     bool mEnableUnderWater = true;
-
-    std::unordered_map<HashedString, unsigned int> mItems;
-
-    vector<HashedString> mOffHandItems = {
-            "minecraft:campfire",
-            "minecraft:soul_campfire",
-            "minecraft:lit_pumpkin",
-            "minecraft:sealantern",
-            "minecraft:lantern",
-            "minecraft:soul_lantern",
-            "minecraft:torch",
-            "minecraft:soul_torch",
-            "minecraft:underwater_torch",
-            "minecraft:colored_torch_rg",
-            "minecraft:colored_torch_bp",
-            "minecraft:redstone_torch",
-            "minecraft:ender_chest",
-            "minecraft:glow_berries",
-            "minecraft:large_amethyst_bud",
-            "minecraft:amethyst_cluster",
-            "minecraft:lava_bucket"
-    };
 
 };
 

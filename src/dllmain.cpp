@@ -1,3 +1,8 @@
+#pragma comment(lib, "../SDK/lib/bedrock_server_api.lib")
+#pragma comment(lib, "../SDK/lib/bedrock_server_var.lib")
+#pragma comment(lib, "../SDK/lib/SymDBHelper.lib")
+#pragma comment(lib, "../SDK/lib/LiteLoader.lib")
+
 #include "Plugin.h"
 
 BOOL APIENTRY DllMain(HMODULE hModule,

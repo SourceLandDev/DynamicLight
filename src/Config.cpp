@@ -10,16 +10,6 @@
 
 Config config;
 
-Config::Config() noexcept {
-    Event::ServerStartedEvent::subscribe([&](Event::ServerStartedEvent ev) -> bool {
-        // Basic load is completed.
-        if (mAutoDiscoverGlowingBlock) {
-            _computeLightBlocks();
-        }
-        return true;
-    });
-}
-
 void Config::loadFromFile(const string &path) {
     mPath = path;
     if (!std::filesystem::exists(mPath)) {
@@ -48,8 +38,6 @@ string Config::_toString() {
     json cfg = {
             {"version", mVersion},
             {"enabled", mEnabled},
-            {"items", mItems},
-            {"offhand", mOffHandItems},
             {"enableItemEntity", mEnableItemActor},
             {"enableAutoGlowingBlockDiscover", mAutoDiscoverGlowingBlock},
             {"enableUnderWater", mEnableUnderWater}
@@ -60,8 +48,6 @@ string Config::_toString() {
 bool Config::_fromJson(json &cfg) {
     _update(cfg);
     cfg.at("enabled").get_to(mEnabled);
-    cfg.at("items").get_to(mItems);
-    cfg.at("offhand").get_to(mOffHandItems);
     cfg.at("enableItemEntity").get_to(mEnableItemActor);
     cfg.at("enableAutoGlowingBlockDiscover").get_to(mAutoDiscoverGlowingBlock);
     cfg.at("enableUnderWater").get_to(mEnableUnderWater);
@@ -99,36 +85,15 @@ void Config::_save() {
     ofile.close();
 }
 
-bool Config::isLightSource(const HashedString& name) {
-    return mItems.contains(name);
-}
-
-bool Config::isOffhandItem(const HashedString& name) {
-    return std::find(mOffHandItems.begin(), mOffHandItems.end(), name) != mOffHandItems.end();
-}
-
-unsigned int Config::getBrightness(const ItemStack& item) {
-    if (item.isNull()) return 0;
-    auto& name = item.getFullNameHash();
-    return isLightSource(name) ? mItems[name] : 0;
-}
-
-void Config::_computeLightBlocks() {
-    size_t beforeLightBlocks = mItems.size();
-    BlockTypeRegistry::forEachBlock([&](const BlockLegacy& legacy) -> bool {
-        auto& block = legacy.getRenderBlock();
-        auto& typeName = block.getName();
-        int light = block.getLightEmission().value;
-        if (light > 0 && !mItems.contains(typeName)) {
-            mItems[typeName] = light;
-        }
-        return true;
-    });
-    size_t afterLightBlocks = mItems.size();
-    if (afterLightBlocks - beforeLightBlocks > 0) {
-        logger.warn("{} new glowing block(s) have been discovered!", afterLightBlocks - beforeLightBlocks);
-        _save();
+unsigned int Config::getBrightness(const ItemStack& item, bool isInWaterOrRain) {
+    if (item.isNull() || !item.isBlock())
+        return 0;
+    if (isInWaterOrRain) {
+        auto typeName = item.getTypeName();
+        if (typeName.contains("torch") || typeName.contains("fire"))
+            return 0;
     }
+    return item.getBlock()->getLightEmission().value;
 }
 
 bool Config::isEnabled() const {
