@@ -36,8 +36,8 @@ TInstanceHook(void, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@
 
 // Tick
 
-TInstanceHook(void, "?normalTick@Player@@UEAAXXZ",
-              Player) {
+TInstanceHook(void, "?normalTick@Mob@@UEAAXXZ",
+              Mob) {
     original(this);
     if (!config.isEnabled() || !hasDimension())
         return;
