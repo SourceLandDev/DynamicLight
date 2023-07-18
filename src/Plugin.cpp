@@ -52,7 +52,7 @@ void PluginInit() {
             !config.getBrightness(*ev.mItemStack))
             return true;
         ev.mPlayer->setOffhandSlot(*ev.mItemStack);
-        ev.mPlayer->getInventory().removeItem_s(ev.mPlayer->getSelectedItemSlot(), ev.mItemStack->getCount());
+        ev.mPlayer->setSelectedItem(ItemStack::EMPTY_ITEM);
         ev.mPlayer->sendInventory(true);
         return false;
     });
