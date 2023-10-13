@@ -42,19 +42,4 @@ void PluginInit() {
         PluginMain();
         return true;
     });
-
-    // OffHand Helper
-
-    Event::PlayerAttackBlockEvent::subscribe([](Event::PlayerAttackBlockEvent ev) {
-        if (!config.isEnabled() ||
-            ev.mItemStack->isNull() ||
-            !ev.mPlayer->getOffhandSlot().isNull() ||
-            !config.getBrightness(*ev.mItemStack))
-            return true;
-        ev.mPlayer->setOffhandSlot(*ev.mItemStack);
-        ev.mPlayer->setSelectedItem(ItemStack::EMPTY_ITEM);
-        ev.mPlayer->sendInventory(true);
-        return false;
-    });
-
 }
