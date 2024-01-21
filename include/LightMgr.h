@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "Plugin.h"
-
-#include "llapi/mc/BlockSource.hpp"
-#include "llapi/mc/HashedString.hpp"
-#include "llapi/mc/Tick.hpp"
+#include "llapi/mc/BlockPos.hpp"
+#include "llapi/mc/Dimension.hpp"
+#include "llapi/mc/Packet.hpp"
+#include "llapi/mc/Types.hpp"
 
 using identity_t = QWORD;
 
@@ -21,8 +20,6 @@ public:
 
     [[nodiscard]] bool isValid(identity_t);
 
-    [[nodiscard]] bool isTurningOn(identity_t);
-
     void turnOff(identity_t);
 
     void turnOn(identity_t, Dimension&, BlockPos, unsigned int = fireLightLevel, bool = false);
@@ -34,10 +31,11 @@ public:
 private:
 
     struct LightInfo {
-        bool mLighting      = false;
+        bool mLighting = false;
         unsigned int mLevel = 0;
-        BlockPos mPos       = BlockPos::ZERO;
-        int mDimId          = -1;
+        BlockPos mPos = BlockPos::ZERO;
+        int mDimId = -1;
+        unsigned int mType = -1;
     };
 
     std::unordered_map<identity_t, LightInfo> mRecordedInfo;

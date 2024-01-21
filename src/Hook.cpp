@@ -2,78 +2,166 @@
 // Created by RedbeanW on 10/30/2022.
 //
 
-#include "Plugin.h"
-
 #include "Config.h"
 #include "LightMgr.h"
 
-#include "llapi/mc/Player.hpp"
-#include "llapi/mc/Container.hpp"
+#include "llapi/mc/Actor.hpp"
+#include "llapi/mc/EnderCrystal.hpp"
+#include "llapi/mc/ExperienceOrb.hpp"
+#include "llapi/mc/FireworksRocketActor.hpp"
 #include "llapi/mc/ItemActor.hpp"
-#include "llapi/mc/Level.hpp"
+#include "llapi/mc/LightningBolt.hpp"
+#include "llapi/mc/MinecartTNT.hpp"
+#include "llapi/mc/Mob.hpp"
 #include "llapi/mc/PrimedTnt.hpp"
-#include "llapi/mc/StaticVanillaBlocks.hpp"
 
 // Remove
 
-TInstanceHook(ItemActor *, "??_EItemActor@@UEAAPEAXI@Z",
-              ItemActor, char a2) {
-    lightMgr.clear((identity_t)this);
-    return original(this, a2);
-}
-
-TInstanceHook(void, "??1Player@@UEAA@XZ",
-              Player) {
+TInstanceHook(void, "?remove@Actor@@UEAAXXZ", Actor) {
+    if (lightMgr.isValid((identity_t)this)) {
+        lightMgr.clear((identity_t)this);
+    }
     original(this);
-    lightMgr.clear((identity_t)this);
-}
-
-TInstanceHook(void, "?explode@Level@@UEAAXAEAVBlockSource@@PEAVActor@@AEBVVec3@@M_N3M3@Z",
-              Level, class BlockSource& a2, class Actor* a3, class Vec3 const& a4, float a5, bool a6, bool a7, float a8, bool a9) {
-    original(this, a2, a3, a4, a5, a6, a7, a8, a9);
-    lightMgr.clear((identity_t)a3);
 }
 
 // Tick
 
-TInstanceHook(void, "?normalTick@Mob@@UEAAXXZ",
-              Mob) {
-    original(this);
-    if (!config.isEnabled() || !hasDimension())
-        return;
-    if (isInvisible() || isSpectator())
-        lightMgr.clear((identity_t)this);
-    else if (isOnFire() || isIgnited())
-        lightMgr.turnOn((identity_t)this, getDimension(), getBlockPos(), LightMgr::fireLightLevel, isImmersedInWater());
-    else {
-        auto inWaterOrRain = isInWaterOrRain();
-        auto light = std::max(config.getBrightness(*getHandSlot(), inWaterOrRain), config.getBrightness(getOffhandSlot(), inWaterOrRain));
-        if (light > 0) {
-            lightMgr.turnOn((identity_t)this, getDimension(), getBlockPos(), light, isImmersedInWater());
-        } else {
+TInstanceHook(void, "?normalTick@Actor@@UEAAXXZ", Actor) {
+    if (!config.isEnabled() || !hasDimension()) {
+        goto END;
+    } {
+        auto valid = lightMgr.isValid((identity_t)this);
+        if (valid && isSpectator()) {
             lightMgr.turnOff((identity_t)this);
+            goto END;
+        }
+        if (isOnFire() || isIgnited()) {
+            if (!valid) {
+                lightMgr.init((identity_t)this);
+            }
+            lightMgr.turnOn((identity_t)this, getDimension(), getBlockPos(), LightMgr::fireLightLevel, _isHeadInWater());
+            goto END;
         }
     }
+END:
+    original(this);
 }
 
-TInstanceHook(void, "?postNormalTick@ItemActor@@QEAAXXZ",
-    ItemActor) {
-    original(this);
-    if (!config.isEnabled() || !config.isItemActorEnabled() || !hasDimension()) return;
-    auto item = getItemStack();
-    if (!item) return;
-    auto light = config.getBrightness(*item, isInWaterOrRain());
-    if (light > 0) {
-        lightMgr.turnOn((identity_t)this, getDimension(), getBlockPos(), light, isImmersedInWater());
-    } else {
-        lightMgr.turnOff((identity_t)this);
+TInstanceHook(void, "?normalTick@Mob@@UEAAXXZ", Mob) {
+    if (!config.isEnabled() || !hasDimension()) {
+        goto END;
     }
+    if (!lightMgr.isValid((identity_t)this)) {
+        lightMgr.init((identity_t)this);
+    } {
+        auto inWater = _isHeadInWater();
+        auto light = std::max(config.getBrightness(*getHandSlot(), inWater), config.getBrightness(getOffhandSlot(), inWater));
+        if (light <= 0) {
+            lightMgr.turnOff((identity_t)this);
+            goto END;
+        }
+        lightMgr.turnOn((identity_t)this, getDimension(), getCameraPos(), light, inWater);
+    }
+END:
+    original(this);
 }
 
-TInstanceHook(void, "?postNormalTick@PrimedTnt@@QEAAXXZ",
-              PrimedTnt) {
+TInstanceHook(void, "?postNormalTick@ItemActor@@QEAAXXZ", ItemActor) {
+    if (!config.isEnabled() || !hasDimension() || !config.isItemActorEnabled()) {
+        goto END;
+    } {
+        auto light = config.getBrightness(*getItemStack(), isInWater());
+        auto valid = lightMgr.isValid((identity_t)this);
+        if (light <= 0) {
+            if (valid) {
+                lightMgr.turnOff((identity_t)this);
+            }
+            goto END;
+        }
+        if (!valid) {
+            lightMgr.init((identity_t)this);
+        }
+        lightMgr.turnOn((identity_t)this, getDimension(), getCameraPos(), light, _isHeadInWater());
+        goto END;
+    }
+END:
     original(this);
-    if (!config.isEnabled() || !hasDimension())
-        return;
-    lightMgr.turnOn((identity_t)this, getDimension(), getBlockPos(), LightMgr::fireLightLevel, isImmersedInWater());
+}
+
+TInstanceHook(void, "?postNormalTick@ExperienceOrb@@QEAAXXZ", ExperienceOrb) {
+    if (!config.isEnabled() || !hasDimension()) {
+        goto END;
+    }
+    if (!lightMgr.isValid((identity_t)this)) {
+        lightMgr.init((identity_t)this);
+    }
+    lightMgr.turnOn((identity_t)this, getDimension(), getCameraPos(), 1, _isHeadInWater());
+END:
+    original(this);
+}
+
+TInstanceHook(void, "?normalTick@PrimedTnt@@UEAAXXZ", PrimedTnt) {
+    if (!config.isEnabled() || !hasDimension()) {
+        goto END;
+    }
+    if (!lightMgr.isValid((identity_t)this)) {
+        lightMgr.init((identity_t)this);
+    }
+    lightMgr.turnOn((identity_t)this, getDimension(), getCameraPos(), LightMgr::fireLightLevel, _isHeadInWater());
+END:
+    original(this);
+}
+
+TInstanceHook(void, "?primeFuse@MinecartTNT@@QEAAXW4ActorDamageCause@@@Z", MinecartTNT, ActorDamageCause a2) {
+    if (!config.isEnabled() || !hasDimension()) {
+        goto END;
+    }
+    lightMgr.init((identity_t)this);
+END:
+    original(this, a2);
+}
+
+TInstanceHook(void, "?normalTick@MinecartTNT@@UEAAXXZ", MinecartTNT) {
+    if (!config.isEnabled() || !hasDimension() || !lightMgr.isValid((identity_t)this)) {
+        goto END;
+    }
+    lightMgr.turnOn((identity_t)this, getDimension(), getCameraPos(), LightMgr::fireLightLevel, _isHeadInWater());
+END:
+    original(this);
+}
+
+TInstanceHook(void, "?normalTick@LightningBolt@@UEAAXXZ", LightningBolt) {
+    if (!config.isEnabled() || !hasDimension()) {
+        goto END;
+    }
+    if (!lightMgr.isValid((identity_t)this)) {
+        lightMgr.init((identity_t)this);
+    }
+    lightMgr.turnOn((identity_t)this, getDimension(), getCameraPos(), LightMgr::fireLightLevel, _isHeadInWater());
+END:
+    original(this);
+}
+
+TInstanceHook(void, "?postNormalTick@FireworksRocketActor@@QEAAXXZ", FireworksRocketActor) {
+    if (!config.isEnabled() || !hasDimension()) {
+        goto END;
+    }
+    if (!lightMgr.isValid((identity_t)this)) {
+        lightMgr.init((identity_t)this);
+    }
+    lightMgr.turnOn((identity_t)this, getDimension(), getCameraPos(), LightMgr::fireLightLevel, _isHeadInWater());
+END:
+    original(this);
+}
+
+TInstanceHook(void, "?normalTick@EnderCrystal@@UEAAXXZ", EnderCrystal) {
+    if (!config.isEnabled() || !hasDimension()) {
+        goto END;
+    }
+    if (!lightMgr.isValid((identity_t)this)) {
+        lightMgr.init((identity_t)this);
+    }
+    lightMgr.turnOn((identity_t)this, getDimension(), getCameraPos(), LightMgr::fireLightLevel, _isHeadInWater());
+END:
+    original(this);
 }

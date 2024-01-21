@@ -3,14 +3,14 @@
 //
 
 #include "Config.h"
+#include "Plugin.h"
 
-#include "llapi/mc/BlockTypeRegistry.hpp"
-#include "llapi/mc/Brightness.hpp"
 #include "llapi/mc/Block.hpp"
+#include "llapi/mc/Brightness.hpp"
 
 Config config;
 
-void Config::loadFromFile(const string &path) {
+void Config::loadFromFile(const std::string& path) {
     mPath = path;
     if (!std::filesystem::exists(mPath)) {
         logger.warn("Configuration file not found, creating...");
@@ -25,7 +25,7 @@ void Config::loadFromFile(const string &path) {
     try {
         auto j = json::parse(file);
         _fromJson(j);
-    } catch(json::exception& e) {
+    } catch (json::exception& e) {
         logger.error("An exception occurred while reading the configuration file.");
         logger.error(e.what());
         logger.error("Preparing new configuration file, please wait...");
@@ -45,7 +45,7 @@ string Config::_toString() {
     return cfg.dump(4);
 }
 
-bool Config::_fromJson(json &cfg) {
+bool Config::_fromJson(json& cfg) {
     _update(cfg);
     cfg.at("enabled").get_to(mEnabled);
     cfg.at("enableItemEntity").get_to(mEnableItemActor);
@@ -85,10 +85,10 @@ void Config::_save() {
     ofile.close();
 }
 
-unsigned int Config::getBrightness(const ItemStack& item, bool isInWaterOrRain) {
+unsigned int Config::getBrightness(const ItemStack& item, bool inWater) {
     if (item.isNull() || !item.isBlock())
         return 0;
-    if (isInWaterOrRain) {
+    if (inWater) {
         auto typeName = item.getTypeName();
         if (typeName.contains("torch") || typeName.contains("fire"))
             return 0;

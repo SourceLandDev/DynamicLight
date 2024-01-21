@@ -8,7 +8,6 @@
 #include "llapi/EventAPI.h"
 
 #include "llapi/mc/Player.hpp"
-#include "llapi/mc/Container.hpp"
 
 #include <filesystem>
 
@@ -30,16 +29,16 @@ void PluginInit() {
     }
 
     config.loadFromFile(DATA_PATH"config.json");
-    
+
     // Register plugin to LL.
 
     ll::registerPlugin("MovingLight", "Items always emit light~", PLUGIN_VERSION, {
         {"Author","RedbeanW"},
         {"Github","https://github.com/Redbeanw44602/MovingLight"}
-    });
+        });
 
     Event::ServerStartedEvent::subscribe([](Event::ServerStartedEvent ev) {
         PluginMain();
         return true;
-    });
+        });
 }
