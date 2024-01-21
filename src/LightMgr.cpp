@@ -9,12 +9,15 @@
 
 #include "llapi/mc/BlockSource.hpp"
 #include "llapi/mc/BlockTypeRegistry.hpp"
+#include "llapi/mc/LiquidBlock.hpp"
 #include "llapi/mc/Brightness.hpp"
 #include "llapi/mc/HashedString.hpp"
+#include "llapi/mc/IConstBlockSource.hpp"
 #include "llapi/mc/Level.hpp"
 #include "llapi/mc/StaticVanillaBlocks.hpp"
 #include "llapi/mc/UpdateBlockPacket.hpp"
 #include "llapi/mc/VanillaBlockTypeIds.hpp"
+#include "llapi/mc/Material.hpp"
 
 LightMgr lightMgr;
 unsigned int LightMgr::fireLightLevel;
@@ -61,6 +64,12 @@ void LightMgr::turnOn(identity_t id, Dimension& dim, BlockPos bp, unsigned int l
     }
     auto& region = dim.getBlockSourceFromMainChunkSource();
     auto& blk = region.getBlock(bp);
+    if (blk.getLightEmission().value >= lightLv ||
+        (underWater && blk != *StaticVanillaBlocks::mWater) ||
+        LiquidBlock::getDepth((IConstBlockSource&)region, bp, blk.getMaterial()) > 0) {
+        turnOff(id);
+        return;
+    }
     UpdateBlockPacket updateBlock(bp, !underWater, BlockTypeRegistry::lookupByName(VanillaBlockTypeIds::LightBlock, lightLv, true)->getRuntimeId(), 3);
     _sendPacket(&dim, bp, updateBlock);
 
