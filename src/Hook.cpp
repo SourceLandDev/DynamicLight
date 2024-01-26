@@ -50,15 +50,24 @@ END:
 TInstanceHook(void, "?normalTick@Mob@@UEAAXXZ", Mob) {
     if (!config.isEnabled() || !hasDimension()) {
         goto END;
-    }
-    if (!lightMgr.isValid((identity_t)this)) {
-        lightMgr.init((identity_t)this);
     } {
+        auto valid = lightMgr.isValid((identity_t)this);
+        if (isSwimming()) {
+            if (valid) {
+                lightMgr.turnOff((identity_t)this);
+            }
+            goto END;
+        }
         auto inWater = _isHeadInWater();
         auto light = std::max(config.getBrightness(*getHandSlot(), inWater), config.getBrightness(getOffhandSlot(), inWater));
         if (light <= 0) {
-            lightMgr.turnOff((identity_t)this);
+            if (valid) {
+                lightMgr.turnOff((identity_t)this);
+            }
             goto END;
+        }
+        if (!valid) {
+            lightMgr.init((identity_t)this);
         }
         lightMgr.turnOn((identity_t)this, getDimension(), getCameraPos(), light, inWater);
     }
@@ -70,8 +79,8 @@ TInstanceHook(void, "?postNormalTick@ItemActor@@QEAAXXZ", ItemActor) {
     if (!config.isEnabled() || !hasDimension() || !config.isItemActorEnabled()) {
         goto END;
     } {
-        auto light = config.getBrightness(*getItemStack(), isInWater());
         auto valid = lightMgr.isValid((identity_t)this);
+        auto light = config.getBrightness(*getItemStack(), isInWater());
         if (light <= 0) {
             if (valid) {
                 lightMgr.turnOff((identity_t)this);
