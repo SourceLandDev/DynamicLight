@@ -49,7 +49,7 @@ void LightMgr::turnOff(identity_t id) {
     }
     auto& region = dim->getBlockSourceFromMainChunkSource();
     auto& blk = region.getBlock(rec.mPos);
-    UpdateBlockPacket updateBlock(rec.mPos, rec.mType, blk.getRuntimeId(), 3);
+    UpdateBlockPacket updateBlock(rec.mPos, rec.mType, blk.getRuntimeId(), 0);
     _sendPacket(dim, rec.mPos, updateBlock);
     rec.mLighting = false;
 }
@@ -70,7 +70,7 @@ void LightMgr::turnOn(identity_t id, Dimension& dim, BlockPos bp, unsigned int l
         turnOff(id);
         return;
     }
-    UpdateBlockPacket updateBlock(bp, !underWater, BlockTypeRegistry::lookupByName(VanillaBlockTypeIds::LightBlock, lightLv, true)->getRuntimeId(), 3);
+    UpdateBlockPacket updateBlock(bp, !underWater, BlockTypeRegistry::lookupByName(VanillaBlockTypeIds::LightBlock, lightLv, true)->getRuntimeId(), 0);
     _sendPacket(&dim, bp, updateBlock);
 
     if (!isSamePos && (isOpened || !isSameLight)) {
