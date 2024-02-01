@@ -27,7 +27,7 @@ TInstanceHook(void, "?remove@Actor@@UEAAXXZ", Actor) {
 // Tick
 
 TInstanceHook(void, "?normalTick@Actor@@UEAAXXZ", Actor) {
-    if (!config.isEnabled() || !hasDimension()) {
+    if (!config.isEnabled() || !hasDimension() || isType(ActorType::FallingBlock)) {
         goto END;
     } {
         auto valid = lightMgr.isValid((identity_t)this);
