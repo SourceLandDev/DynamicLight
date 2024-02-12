@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "mc/network/packet/Packet.h"
 #include "mc/world/level/BlockPos.h"
 #include "mc/world/level/dimension/Dimension.h"
 
@@ -11,7 +12,6 @@ using identity_t = int64_t;
 
 class LightMgr {
 public:
-
     explicit LightMgr() noexcept;
 
     void init(identity_t);
@@ -27,20 +27,17 @@ public:
     static unsigned int fireLightLevel;
 
 private:
-
     struct LightInfo {
-        bool mLighting = false;
-        unsigned int mLevel = 0;
-        BlockPos mPos = BlockPos::ZERO;
-        int mDimId = -1;
-        unsigned int mType = -1;
+        bool         mLighting = false;
+        unsigned int mLevel    = 0;
+        BlockPos     mPos      = BlockPos::ZERO;
+        int          mDimId    = -1;
+        unsigned int mType     = -1;
     };
 
     std::unordered_map<identity_t, LightInfo> mRecordedInfo;
 
     void _sendPacket(Dimension* dim, const BlockPos& pos, class Packet const& pkt);
-
-
 };
 
 extern LightMgr lightMgr;

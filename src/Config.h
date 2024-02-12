@@ -5,14 +5,12 @@
 #pragma once
 
 #include "Nlohmann/json.hpp"
-
 #include "mc/world/item/registry/ItemStack.h"
 
 using json = nlohmann::json;
 
 class Config {
 public:
-
     void loadFromFile(const std::string&);
 
     [[nodiscard]] bool isEnabled() const;
@@ -24,7 +22,6 @@ public:
     [[nodiscard]] bool isUnderWaterEnabled() const;
 
 private:
-
     bool _fromJson(json&);
 
     [[nodiscard]] std::string _toString();
@@ -34,16 +31,14 @@ private:
     void _save();
 
 private:
-
     std::string mPath;
 
     const unsigned int mVersion = 211;
 
-    bool mEnabled = true;
-    bool mEnableItemActor = true;
+    bool mEnabled                  = true;
+    bool mEnableItemActor          = true;
     bool mAutoDiscoverGlowingBlock = true;
-    bool mEnableUnderWater = true;
-
+    bool mEnableUnderWater         = true;
 };
 
 extern Config config;

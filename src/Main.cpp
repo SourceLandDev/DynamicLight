@@ -1,12 +1,10 @@
-#include "Config.h"
 #include "Main.h"
 
+#include "Config.h"
 #include "ll/api/event/server/ServerStartedEvent.h"
-
 #include "mc/world/actor/player/Player.h"
 
 #include <filesystem>
-
 #include <ll/api/plugin/NativePlugin.h>
 #include <memory>
 
@@ -36,13 +34,9 @@ bool DyncmicLight::load(ll::plugin::NativePlugin& self) {
     return true;
 }
 
-bool DyncmicLight::enable() {
-    return true;
-}
+bool DyncmicLight::enable() { return true; }
 
-bool DyncmicLight::disable() {
-    return true;
-}
+bool DyncmicLight::disable() { return true; }
 
 extern "C" {
 _declspec(dllexport) bool ll_plugin_load(ll::plugin::NativePlugin& self) {
@@ -60,4 +54,4 @@ _declspec(dllexport) bool ll_plugin_disable(ll::plugin::NativePlugin&) { return 
 // }
 }
 
-} // namespace rename_this
+} // namespace dynamic_light

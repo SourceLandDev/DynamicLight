@@ -30,4 +30,4 @@ private:
     ll::plugin::NativePlugin* mSelf{};
 };
 
-} // namespace rename_this
+} // namespace dynamic_light

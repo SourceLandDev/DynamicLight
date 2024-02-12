@@ -3,15 +3,15 @@
 //
 
 #include "Config.h"
-#include "Main.h"
 
-#include "mc/world/level/block/Block.h"
+#include "Main.h"
 #include "mc/common/Brightness.h"
+#include "mc/world/level/block/Block.h"
 
 Config config;
 
 void Config::loadFromFile(const std::string& path) {
-    mPath = path;
+    mPath              = path;
     ll::Logger& logger = dynamic_light::DyncmicLight::getInstance().getSelf().getLogger();
     if (!std::filesystem::exists(mPath)) {
         logger.warn("Configuration file not found, creating...");
@@ -37,11 +37,11 @@ void Config::loadFromFile(const std::string& path) {
 
 std::string Config::_toString() {
     json cfg = {
-            {"version", mVersion},
-            {"enabled", mEnabled},
-            {"enableItemEntity", mEnableItemActor},
-            {"enableAutoGlowingBlockDiscover", mAutoDiscoverGlowingBlock},
-            {"enableUnderWater", mEnableUnderWater}
+        {"version",                        mVersion                 },
+        {"enabled",                        mEnabled                 },
+        {"enableItemEntity",               mEnableItemActor         },
+        {"enableAutoGlowingBlockDiscover", mAutoDiscoverGlowingBlock},
+        {"enableUnderWater",               mEnableUnderWater        }
     };
     return cfg.dump(4);
 }
@@ -60,18 +60,18 @@ void Config::_update(json& cfg) {
         _save();
         return;
     }
-    int version = cfg["version"];
+    int  version  = cfg["version"];
     bool needSave = false;
     if (version < 200) {
-        cfg["enableItemEntity"] = true;
+        cfg["enableItemEntity"]               = true;
         cfg["enableAutoGlowingBlockDiscover"] = true;
-        cfg["version"] = 200;
-        needSave = true;
+        cfg["version"]                        = 200;
+        needSave                              = true;
     }
     if (version < 211) {
         cfg["enableUnderWater"] = true;
-        cfg["version"] = 211;
-        needSave = true;
+        cfg["version"]          = 211;
+        needSave                = true;
     }
     if (needSave) {
         ll::Logger& logger = dynamic_light::DyncmicLight::getInstance().getSelf().getLogger();
@@ -88,24 +88,16 @@ void Config::_save() {
 }
 
 unsigned int Config::getBrightness(const ItemStack& item, bool inWater) {
-    if (item.isNull() || !item.isBlock())
-        return 0;
+    if (item.isNull() || !item.isBlock()) return 0;
     if (inWater) {
         auto typeName = item.getTypeName();
-        if (typeName.contains("torch") || typeName.contains("fire"))
-            return 0;
+        if (typeName.contains("torch") || typeName.contains("fire")) return 0;
     }
     return item.getBlock()->getLightEmission().value;
 }
 
-bool Config::isEnabled() const {
-    return mEnabled;
-}
+bool Config::isEnabled() const { return mEnabled; }
 
-bool Config::isItemActorEnabled() const {
-    return mEnableItemActor;
-}
+bool Config::isItemActorEnabled() const { return mEnableItemActor; }
 
-bool Config::isUnderWaterEnabled() const {
-    return mEnableUnderWater;
-}
+bool Config::isUnderWaterEnabled() const { return mEnableUnderWater; }

@@ -16,8 +16,6 @@
 #include "mc/world/actor/item/MinecartTNT.h"
 #include "mc/world/actor/item/PrimedTnt.h"
 
-#include <mc/deps/puv/EquipmentSlot.h>
-
 // Remove
 
 LL_AUTO_TYPE_INSTANCE_HOOK(ActorRemoveHook, ll::memory::HookPriority::Normal, Actor, "?remove@Actor@@UEAAXXZ", void) {
