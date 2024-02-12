@@ -2,21 +2,12 @@ on:
   release:
     types:
       - published
-
+  
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Get BDS libraries
-        run: |
-          $bds_version = (Get-Content bds_version.txt)
-          $url = "https://github.com/LiteLDev/BDSLibrary/releases/download/$bds_version/bdslibrary-$bds_version-windows-amd64.zip"
-          Invoke-WebRequest -Uri $url -OutFile bds_lib.zip
-          Expand-Archive -Path bds_lib.zip -DestinationPath sdk/lib
 
       - uses: xmake-io/github-action-setup-xmake@v1
       
@@ -31,10 +22,9 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: movinglight-windows-x64-${{ github.sha }}
+          name: ${{ github.event.repository.name }}-windows-x64-${{ github.sha }}
           path: |
-            build/windows/x64/release/MovingLight.dll
-            build/windows/x64/release/MovingLight.pdb
+            bin/
 
   upload-to-release:
     needs:
@@ -47,20 +37,20 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          name: movinglight-windows-x64-${{ github.sha }}
-          path: bin
+          name: ${{ github.event.repository.name }}-windows-x64-${{ github.sha }}
+          path: release/
 
       - run: |
-          cp CHANGELOG.md LICENSE README.md bin/
+          cp LICENSE README.md release/
 
       - name: Archive release
         run: |
-          cd bin
-          zip -r ../movinglight-windows-x64.zip *
+          cd release
+          zip -r ../${{ github.event.repository.name }}-windows-x64.zip *
           cd ..
 
       - uses: softprops/action-gh-release@v1
         with:
           append_body: true
           files: |
-            movinglight-windows-x64.zip
+            ${{ github.event.repository.name }}-windows-x64.zip
