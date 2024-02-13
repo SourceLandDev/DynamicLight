@@ -17,7 +17,6 @@
 #include "mc/world/level/block/Block.h"
 #include "mc/world/level/block/LiquidBlock.h"
 #include "mc/world/level/block/registry/BlockTypeRegistry.h"
-#include "mc/world/level/block/utils/StaticVanillaBlocks.h"
 #include "mc/world/level/block/utils/VanillaBlockTypeIds.h"
 
 LightMgr     lightMgr;
@@ -26,7 +25,8 @@ unsigned int LightMgr::fireLightLevel;
 LightMgr::LightMgr() noexcept {
     ll::event::EventBus::getInstance().emplaceListener<ll::event::ServerStartedEvent>(
         [](ll::event::ServerStartedEvent ev) {
-            fireLightLevel = StaticVanillaBlocks::mFire->getLightEmission().value;
+            fireLightLevel =
+                BlockTypeRegistry::lookupByName(VanillaBlockTypeIds::Fire, 0, true)->getLightEmission().value;
             return true;
         }
     );
@@ -65,7 +65,7 @@ void LightMgr::turnOn(identity_t id, Dimension& dim, BlockPos bp, unsigned int l
     }
     auto& region = dim.getBlockSourceFromMainChunkSource();
     auto& blk    = region.getBlock(bp);
-    if (blk.getLightEmission().value >= lightLv || (underWater && &blk != StaticVanillaBlocks::mWater)
+    if (blk.getLightEmission().value >= lightLv || (underWater && blk.getTypeName() != VanillaBlockTypeIds::Water)
         || LiquidBlock::getDepth((IConstBlockSource&)region, bp, blk.getMaterial()) > 0) {
         turnOff(id);
         return;

@@ -53,6 +53,4 @@ _deps
 /.xmake/
 /build/
 CMakeLists.txt
-
-/bin
-/vsxmake2022
+/vs2022
