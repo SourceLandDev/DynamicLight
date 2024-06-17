@@ -3,7 +3,7 @@ add_rules("mode.debug", "mode.release", "mode.releasedbg")
 add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 
 -- Option 1: Use the latest version of LeviLamina released on GitHub.
-add_requires("levilamina")
+add_requires("levilamina develop")
 
 -- Option 2: Use a specific version of LeviLamina released on GitHub.
 -- add_requires("levilamina x.x.x")
