@@ -9,6 +9,7 @@
 #include "ll/api/event/server/ServerStartedEvent.h"
 #include "ll/api/service/Bedrock.h"
 #include "ll/api/service/ServerInfo.h"
+#include "mc/common/Brightness.h"
 #include "mc/deps/core/string/HashedString.h"
 #include "mc/network/packet/UpdateBlockPacket.h"
 #include "mc/world/level/BlockSource.h"
@@ -65,7 +66,7 @@ void LightMgr::turnOn(identity_t id, Dimension& dim, BlockPos bp, unsigned int l
     }
     auto& region = dim.getBlockSourceFromMainChunkSource();
     auto& blk    = region.getBlock(bp);
-    if (blk.getLightEmission().value >= lightLv || (underWater && blk.getTypeName() != VanillaBlockTypeIds::Water)
+    if (blk.getLightEmission().value >= lightLv || (underWater && blk.getTypeName() != VanillaBlockTypeIds::Water.getString())
         || LiquidBlock::getDepth((IConstBlockSource&)region, bp, blk.getMaterial()) > 0) {
         turnOff(id);
         return;
